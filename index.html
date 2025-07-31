@@ -16,19 +16,6 @@
       overflow: hidden;
     }
 
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('https://i.imgur.com/9WxGUWE.jpeg') no-repeat center center;
-      background-size: cover;
-      opacity: 0.6;
-      z-index: 0;
-    }
-
     h1 {
       margin-bottom: 10px;
       font-size: 2.8em;
@@ -78,6 +65,15 @@
       background-color: #ffffff22;
     }
 
+    #resetBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 0.9em;
+      padding: 6px 12px;
+      opacity: 0.8;
+    }
+
     #logo {
       margin-top: 40px;
       z-index: 1;
@@ -85,7 +81,7 @@
     }
 
     #logo img {
-      width: 120px;
+      width: 150px;
       opacity: 0.92;
       filter: drop-shadow(0 0 6px white);
       transition: transform 0.3s ease;
@@ -98,9 +94,12 @@
 </head>
 <body>
   <h1>PIT - AI Workshop</h1>
-  <p id="subtitle">Press the button below to inaugurate the PIT - AI Workshop countdown.</p>
+  <p id="subtitle">PIT - AI Workshop countdown</p>
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">170:00:00</div>
+
+  <!-- Reset Button -->
+  <button id="resetBtn" onclick="resetTimer()">⏹ Reset</button>
 
   <!-- Mercedes-Benz Logo -->
   <div id="logo">
@@ -138,22 +137,27 @@
     function startTimer() {
       if (localStorage.getItem('endTime')) return;
 
-      const endTime = Date.now() + 170 * 3600 * 1000; // 170 hours in milliseconds
+      const endTime = Date.now() + 170 * 3600 * 1000; // 170 hours
       localStorage.setItem('endTime', endTime);
       updateDisplay();
 
       interval = setInterval(updateDisplay, 1000);
-
-      // Hide the button after starting
       document.getElementById("startBtn").style.display = "none";
     }
 
-    // Auto-resume if already started
+    function resetTimer() {
+      const confirmReset = confirm("Are you sure you want to reset the timer?");
+      if (confirmReset) {
+        clearInterval(interval);
+        localStorage.removeItem('endTime');
+        document.getElementById('timer').textContent = '170:00:00';
+        document.getElementById("startBtn").style.display = "inline-block";
+      }
+    }
+
     if (localStorage.getItem('endTime')) {
       interval = setInterval(updateDisplay, 1000);
       updateDisplay();
-
-      // Hide the button if already running
       document.getElementById("startBtn").style.display = "none";
     }
   </script>
