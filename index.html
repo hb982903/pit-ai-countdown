@@ -38,12 +38,12 @@
   <button onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <!-- ✅ Firebase SDK (all-in-one) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase.js"></script>
 
-  <!-- Main Script -->
+  <!-- ✅ Countdown Logic -->
   <script>
+    // 🔥 Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
@@ -54,13 +54,16 @@
       appId: "1:50176680454:web:29ee8480219de70cd89987"
     };
 
+    // 🔌 Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const startTimeRef = db.ref('countdown/startTime');
 
+    // 🕒 Fixed end time for everyone
     const endTime = new Date("2025-08-08T13:05:00+05:30").getTime();
     let interval;
 
+    // ⏱️ Format time nicely
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
       const hrs = Math.floor(totalSeconds / 3600);
@@ -70,6 +73,7 @@
         .toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
+    // 🔄 Update timer every second
     function updateCountdown(startTimestamp) {
       clearInterval(interval);
       interval = setInterval(() => {
@@ -85,6 +89,7 @@
       }, 1000);
     }
 
+    // 📡 Listen for start time from Firebase
     startTimeRef.on("value", (snapshot) => {
       const startTimestamp = snapshot.val();
       if (startTimestamp) {
@@ -93,6 +98,7 @@
       }
     });
 
+    // 🚀 Function for chairman to start timer
     function startTimer() {
       startTimeRef.set(Date.now());
     }
