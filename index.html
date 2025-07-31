@@ -97,7 +97,7 @@
   <h1>PIT - AI Workshop</h1>
   <p id="subtitle">PIT - AI Workshop countdown</p>
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
-  <div id="timer">170:00:00</div>
+  <div id="timer">--:--:--</div>
 
   <!-- Reset Button -->
   <button id="resetBtn" onclick="resetTimer()">⏹ Reset</button>
@@ -110,6 +110,9 @@
   <script>
     let interval;
 
+    // Fixed end time: 8th Aug 2025, 13:05 IST (convert to UTC timestamp)
+    const fixedEndTime = new Date("2025-08-08T13:05:00+05:30").getTime();
+
     function formatTime(seconds) {
       const hrs = Math.floor(seconds / 3600);
       const mins = Math.floor((seconds % 3600) / 60);
@@ -120,28 +123,26 @@
     }
 
     function updateDisplay() {
-      const endTime = localStorage.getItem('endTime');
-      if (!endTime) return;
+      const startFlag = localStorage.getItem('timerStarted');
+      if (!startFlag) return;
 
       const now = Date.now();
-      const remaining = Math.floor((endTime - now) / 1000);
+      const remaining = Math.floor((fixedEndTime - now) / 1000);
 
       if (remaining <= 0) {
         clearInterval(interval);
         document.getElementById('timer').textContent = 'Timer Ended';
-        localStorage.removeItem('endTime');
+        localStorage.removeItem('timerStarted');
       } else {
         document.getElementById('timer').textContent = formatTime(remaining);
       }
     }
 
     function startTimer() {
-      if (localStorage.getItem('endTime')) return;
+      if (localStorage.getItem('timerStarted')) return;
 
-      const endTime = Date.now() + 170 * 3600 * 1000; // 170 hours in ms
-      localStorage.setItem('endTime', endTime);
+      localStorage.setItem('timerStarted', true);
       updateDisplay();
-
       interval = setInterval(updateDisplay, 1000);
       document.getElementById("startBtn").style.display = "none";
     }
@@ -150,15 +151,16 @@
       const confirmReset = confirm("Are you sure you want to reset the timer?");
       if (confirmReset) {
         clearInterval(interval);
-        localStorage.removeItem('endTime');
-        document.getElementById('timer').textContent = '170:00:00';
+        localStorage.removeItem('timerStarted');
+        document.getElementById('timer').textContent = '--:--:--';
         document.getElementById("startBtn").style.display = "inline-block";
       }
     }
 
-    if (localStorage.getItem('endTime')) {
-      interval = setInterval(updateDisplay, 1000);
+    // Auto-resume if previously started
+    if (localStorage.getItem('timerStarted')) {
       updateDisplay();
+      interval = setInterval(updateDisplay, 1000);
       document.getElementById("startBtn").style.display = "none";
     }
   </script>
