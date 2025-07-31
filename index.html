@@ -26,20 +26,33 @@
     }
 
     button {
-      padding: 12px 24px;
-      font-size: 1.2em;
+      padding: 10px 20px;
+      font-size: 1em;
       margin-top: 20px;
       cursor: pointer;
+      border: none;
+      border-radius: 6px;
     }
 
     #resetBtn {
       position: fixed;
       bottom: 20px;
       left: 20px;
-      background-color: #444;
+      background-color: #333;
       color: white;
-      border: none;
-      border-radius: 6px;
+      font-size: 0.8em;
+      padding: 6px 12px;
+    }
+
+    #logo {
+      margin-top: 40px;
+      width: 60px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    #logo:hover {
+      transform: scale(1.15);
     }
   </style>
 </head>
@@ -49,8 +62,11 @@
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
 
+  <!-- Mercedes-Benz Logo -->
+  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" alt="Mercedes Logo" />
+
   <!-- Reset Button -->
-  <button id="resetBtn" onclick="resetTimer()">🔁 Reset Countdown</button>
+  <button id="resetBtn" onclick="resetTimer()">Reset</button>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -98,7 +114,6 @@
       }, 1000);
     }
 
-    // Listen for Firebase trigger
     startRef.on("value", snapshot => {
       const started = snapshot.val();
       if (started === true) {
@@ -116,7 +131,7 @@
       if (now < targetTime) {
         startRef.set(true);
       } else {
-        alert("Time has already passed!");
+        alert("⏰ Time has already passed!");
       }
     }
 
