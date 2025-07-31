@@ -56,7 +56,7 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 65px;
+      width: 70px;
       transition: transform 0.3s ease-in-out;
     }
 
@@ -70,7 +70,9 @@
   <div id="timer">Waiting to start...</div>
   <button id="startBtn">Begin Countdown</button>
   <button id="resetBtn">Reset</button>
-  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" alt="Mercedes Logo" />
+  
+  <!-- ✅ Reliable Benz logo from GitHub CDN -->
+  <img id="logo" src="https://raw.githubusercontent.com/hb982903/pit-ai-countdown/main/benz-logo.png" alt="Mercedes-Benz Logo" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -94,8 +96,7 @@
     const btn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
 
-    // Target time (8th Aug 2025, 1:05 PM IST = 07:35 UTC)
-    const targetDate = new Date("2025-08-08T07:35:00Z").getTime();
+    const targetDate = new Date("2025-08-08T07:35:00Z").getTime(); // 1:05 PM IST
 
     let interval = null;
 
@@ -121,7 +122,6 @@
       }, 1000);
     }
 
-    // Listen for timer start from DB
     onValue(startTimeRef, (snapshot) => {
       const val = snapshot.val();
       if (val) {
