@@ -15,10 +15,19 @@
       position: relative;
     }
 
+    #appContent {
+      display: none;
+    }
+
+    #loadingScreen {
+      font-size: 1.5em;
+      color: white;
+      margin-top: 100px;
+    }
+
     h1 {
       font-size: 2.5em;
       text-shadow: 0 0 30px rgba(255,255,255,0.8);
-      z-index: 1;
     }
 
     #subtitle {
@@ -72,18 +81,21 @@
   </style>
 </head>
 <body>
-  <h1>PIT - AI Workshop</h1>
-  <p id="subtitle">The countdown to the PIT - AI Workshop</p>
-  <button id="startBtn">🚀 Begin Countdown</button>
-  <div id="timer">00:00:00</div>
-  <button id="resetBtn">🔁 Reset Timer</button>
+  <div id="loadingScreen">⏳ Loading countdown status...</div>
 
-  <!-- Mercedes-Benz Logo -->
-  <div id="logo">
-    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
+  <div id="appContent">
+    <h1>PIT - AI Workshop</h1>
+    <p id="subtitle">The countdown to the PIT - AI Workshop</p>
+    <button id="startBtn">🚀 Begin Countdown</button>
+    <div id="timer">00:00:00</div>
+    <button id="resetBtn">🔁 Reset Timer</button>
+
+    <div id="logo">
+      <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
+    </div>
   </div>
 
-  <!-- Luxon CDN -->
+  <!-- Luxon -->
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 
   <!-- Firebase -->
@@ -112,6 +124,8 @@
     const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
     const timerEl = document.getElementById("timer");
+    const appContent = document.getElementById("appContent");
+    const loadingScreen = document.getElementById("loadingScreen");
 
     let interval;
 
@@ -123,7 +137,7 @@
       return `${hrs}:${mins}:${secs}`;
     }
 
-    function startCountdown(startTime) {
+    function startCountdown() {
       clearInterval(interval);
 
       interval = setInterval(() => {
@@ -139,7 +153,6 @@
       }, 1000);
     }
 
-    // Start button click
     startBtn.addEventListener("click", async () => {
       const snapshot = await get(startRef);
       if (!snapshot.exists()) {
@@ -147,7 +160,6 @@
       }
     });
 
-    // Reset button click
     resetBtn.addEventListener("click", async () => {
       if (confirm("Are you sure you want to reset the countdown?")) {
         await remove(startRef);
@@ -157,11 +169,14 @@
       }
     });
 
-    // Listen for changes
+    // On Firebase value change
     onValue(startRef, (snapshot) => {
+      loadingScreen.style.display = "none";
+      appContent.style.display = "block";
+
       if (snapshot.exists()) {
         startBtn.style.display = "none";
-        startCountdown(snapshot.val());
+        startCountdown();
       } else {
         startBtn.style.display = "inline-block";
         clearInterval(interval);
