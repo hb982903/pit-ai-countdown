@@ -1,59 +1,103 @@
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
-    authDomain: "pit-ai-countdown.firebaseapp.com",
-    databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
-    projectId: "pit-ai-countdown",
-    storageBucket: "pit-ai-countdown.firebasestorage.app",
-    messagingSenderId: "50176680454",
-    appId: "1:50176680454:web:29ee8480219de70cd89987"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const startTimeRef = db.ref('countdown/startTime');
-
-  const DURATION_MS = 5 * 60 * 1000; // 5 minutes
-  let interval;
-
-  function formatTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-
-  function updateCountdown(startTimestamp) {
-    clearInterval(interval);
-    interval = setInterval(() => {
-      const now = Date.now();
-      const elapsed = now - startTimestamp;
-      const remaining = DURATION_MS - elapsed;
-
-      if (remaining <= 0) {
-        document.getElementById('timer').textContent = "Timer Ended";
-        clearInterval(interval);
-      } else {
-        document.getElementById('timer').textContent = formatTime(remaining);
-      }
-    }, 1000);
-  }
-
-  startTimeRef.on("value", (snapshot) => {
-    const startTimestamp = snapshot.val();
-    console.log("Start timestamp from Firebase:", startTimestamp);
-    if (startTimestamp) {
-      document.querySelector("button").style.display = "none";
-      updateCountdown(startTimestamp);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIT - AI Workshop Countdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      background: black;
+      color: white;
     }
-  });
 
-  function startTimer() {
-    startTimeRef.set(Date.now());
-  }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
 
-  window.startTimer = startTimer;
-</script>
+    #timer {
+      font-size: 3em;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1.2em;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>PIT - AI Workshop</h1>
+  <p>Press the button to start the official countdown</p>
+  <button onclick="startTimer()">🚀 Begin Countdown</button>
+  <div id="timer">--:--</div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Countdown Logic -->
+  <script>
+    // ✅ Your Firebase config
+    var firebaseConfig = {
+      apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
+      authDomain: "pit-ai-countdown.firebaseapp.com",
+      databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
+      projectId: "pit-ai-countdown",
+      storageBucket: "pit-ai-countdown.appspot.com",
+      messagingSenderId: "50176680454",
+      appId: "1:50176680454:web:29ee8480219de70cd89987"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+    var startTimeRef = db.ref("countdown/startTime");
+
+    const DURATION_MS = 5 * 60 * 1000; // 5 minutes
+    let interval = null;
+
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateCountdown(startTimestamp) {
+      clearInterval(interval);
+      interval = setInterval(() => {
+        const now = Date.now();
+        const elapsed = now - startTimestamp;
+        const remaining = DURATION_MS - elapsed;
+
+        if (remaining <= 0) {
+          document.getElementById('timer').textContent = "Timer Ended";
+          clearInterval(interval);
+        } else {
+          document.getElementById('timer').textContent = formatTime(remaining);
+        }
+      }, 1000);
+    }
+
+    startTimeRef.on("value", function(snapshot) {
+      const startTimestamp = snapshot.val();
+      if (startTimestamp) {
+        document.querySelector("button").style.display = "none";
+        updateCountdown(startTimestamp);
+      }
+    });
+
+    function startTimer() {
+      startTimeRef.set(Date.now());
+    }
+
+    window.startTimer = startTimer;
+  </script>
+</body>
+</html>
