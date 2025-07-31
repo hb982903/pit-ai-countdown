@@ -91,7 +91,9 @@
     const timerEl = document.getElementById("timer");
     const btn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
-    const targetDate = new Date("2025-08-08T11:05:00Z").getTime(); // 13:05 Berlin = 11:05 UTC
+
+    // Berlin Time: 13:05 UTC+2 → 11:05 UTC
+    const targetDate = new Date("2025-08-08T11:05:00Z").getTime();
 
     let interval = null;
 
@@ -139,10 +141,10 @@
     resetBtn.addEventListener("click", async () => {
       const confirmReset = confirm("Are you sure you want to reset the countdown?");
       if (confirmReset) {
+        if (interval) clearInterval(interval);
         await remove(startTimeRef);
         timerEl.textContent = "Waiting to start...";
         btn.style.display = "inline-block";
-        if (interval) clearInterval(interval);
       }
     });
   </script>
