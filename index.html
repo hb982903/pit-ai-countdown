@@ -2,73 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PIT - AI Workshop Countdown</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      padding: 50px;
       margin: 0;
-      padding: 50px 20px;
       background: black;
       color: white;
-      position: relative;
     }
 
     h1 {
-      font-size: 2.8em;
-      margin-bottom: 10px;
-      text-shadow: 0 0 30px rgba(255,255,255,0.8);
+      font-size: 2.5em;
+      text-shadow: 0 0 20px #fff;
     }
 
     #subtitle {
       font-size: 1.2em;
-      color: #ffffffcc;
-      margin-bottom: 30px;
-      animation: pulse 3s infinite;
-    }
-
-    @keyframes pulse {
-      0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-      50% { text-shadow: 0 0 20px rgba(255,255,255,1); }
-      100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+      color: #ddd;
+      margin-bottom: 20px;
     }
 
     #timer {
       font-size: 3em;
       margin: 20px 0;
-      text-shadow: 2px 2px 4px #000;
     }
 
     button {
       padding: 10px 20px;
-      font-size: 1.1em;
-      border: none;
-      border-radius: 8px;
-      background-color: #000000cc;
-      color: white;
+      font-size: 1em;
       cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #ffffff22;
+      background-color: #222;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 5px;
+      margin: 10px;
     }
 
     #resetBtn {
       position: fixed;
       bottom: 20px;
       left: 20px;
-      font-size: 0.8em;
       padding: 6px 12px;
+      font-size: 0.9em;
+      background-color: #aa0000;
     }
 
     #logo {
-      margin-top: 40px;
+      margin-top: 30px;
     }
 
     #logo img {
-      width: 120px;
-      filter: drop-shadow(0 0 6px white);
+      width: 130px;
+      filter: drop-shadow(0 0 5px white);
       transition: transform 0.3s ease;
     }
 
@@ -80,22 +68,22 @@
 <body>
   <h1>PIT - AI Workshop</h1>
   <p id="subtitle">The countdown to the PIT - AI Workshop</p>
-  <button id="startBtn" style="display: none;">🚀 Begin Countdown</button>
+
   <div id="timer">--:--:--</div>
 
-  <!-- Reset Button -->
+  <button id="startBtn">🚀 Begin Countdown</button>
   <button id="resetBtn">Reset Countdown</button>
 
-  <!-- Mercedes-Benz Logo -->
   <div id="logo">
     <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
   </div>
 
-  <!-- Firebase Script -->
+  <!-- Firebase + Countdown Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
@@ -110,10 +98,12 @@
     const db = getDatabase(app);
     const startTimeRef = ref(db, "startTime");
 
-    const targetDate = new Date("2025-08-08T13:05:00+05:30").getTime();
     const timerEl = document.getElementById("timer");
-    const btn = document.getElementById("startBtn");
+    const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+
+    // Target date: 8 August 2025, 13:05 Berlin time (UTC+2)
+    const targetDate = new Date("2025-08-08T13:05:00+02:00").getTime();
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
@@ -123,7 +113,7 @@
       return `${hrs}:${mins}:${secs}`;
     }
 
-    function updateCountdown(startTime) {
+    function updateCountdown() {
       const interval = setInterval(() => {
         const now = Date.now();
         const remaining = targetDate - now;
@@ -137,36 +127,30 @@
       }, 1000);
     }
 
-    get(startTimeRef).then((snapshot) => {
-      const value = snapshot.val();
-      if (value) {
-        btn.style.display = "none";
-        updateCountdown(value);
-      } else {
-        btn.style.display = "inline-block";
-      }
-    });
-
+    // Watch Firebase for changes
     onValue(startTimeRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
-        btn.style.display = "none";
-        updateCountdown(value);
+        startBtn.style.display = "none";
+        updateCountdown();
       }
     });
 
-    btn.addEventListener("click", async () => {
+    // Start button handler
+    startBtn.addEventListener("click", async () => {
       const snapshot = await get(startTimeRef);
       if (!snapshot.exists()) {
         await set(startTimeRef, Date.now());
       }
     });
 
+    // Reset button handler
     resetBtn.addEventListener("click", async () => {
       const confirmReset = confirm("Are you sure you want to reset the countdown?");
       if (confirmReset) {
         await remove(startTimeRef);
-        location.reload();
+        startBtn.style.display = "inline-block";
+        timerEl.textContent = "--:--:--";
       }
     });
   </script>
