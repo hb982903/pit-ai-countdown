@@ -12,6 +12,7 @@
       margin: 0;
       background: black;
       color: white;
+      position: relative;
     }
 
     h1 {
@@ -30,6 +31,16 @@
       margin-top: 20px;
       cursor: pointer;
     }
+
+    #resetBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -37,6 +48,9 @@
   <p>Press the button to start the official countdown</p>
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
+
+  <!-- Reset Button -->
+  <button id="resetBtn" onclick="resetTimer()">🔁 Reset Countdown</button>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -54,21 +68,19 @@
       appId: "1:50176680454:web:29ee8480219de70cd89987"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const startRef = db.ref("countdown/startTime");
 
-    let interval;
     const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
+    let interval;
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
       const hrs = Math.floor(totalSeconds / 3600);
       const mins = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
-      return `${hrs.toString().padStart(2, '0')}:${mins
-        .toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
     function startCountdown() {
@@ -92,10 +104,13 @@
       if (started === true) {
         document.getElementById("startBtn").style.display = "none";
         startCountdown();
+      } else {
+        clearInterval(interval);
+        document.getElementById("timer").textContent = "--:--:--";
+        document.getElementById("startBtn").style.display = "inline-block";
       }
     });
 
-    // Chairman triggers this
     function startTimer() {
       const now = Date.now();
       if (now < targetTime) {
@@ -105,7 +120,15 @@
       }
     }
 
+    function resetTimer() {
+      const confirmReset = confirm("⚠️ Are you sure you want to reset the countdown?");
+      if (confirmReset) {
+        startRef.set(false);
+      }
+    }
+
     window.startTimer = startTimer;
+    window.resetTimer = resetTimer;
   </script>
 </body>
 </html>
