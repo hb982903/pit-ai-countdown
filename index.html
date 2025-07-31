@@ -2,62 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PIT - AI Workshop Countdown</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 50px;
       margin: 0;
+      padding: 50px 20px;
       background: black;
       color: white;
+      position: relative;
     }
 
     h1 {
       font-size: 2.8em;
       margin-bottom: 10px;
-      text-shadow: 0 0 10px rgba(255,255,255,0.8);
+      text-shadow: 0 0 30px rgba(255,255,255,0.8);
     }
 
     #subtitle {
       font-size: 1.2em;
-      font-weight: 500;
-      margin-bottom: 20px;
+      color: #ffffffcc;
+      margin-bottom: 30px;
       animation: pulse 3s infinite;
     }
 
     @keyframes pulse {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
+      0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+      50% { text-shadow: 0 0 20px rgba(255,255,255,1); }
+      100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
     }
 
     #timer {
       font-size: 3em;
       margin: 20px 0;
+      text-shadow: 2px 2px 4px #000;
     }
 
     button {
       padding: 10px 20px;
-      font-size: 1.2em;
-      background-color: #222;
-      color: white;
+      font-size: 1.1em;
       border: none;
       border-radius: 8px;
+      background-color: #000000cc;
+      color: white;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #444;
+      background-color: #ffffff22;
+    }
+
+    #resetBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 0.8em;
+      padding: 6px 12px;
     }
 
     #logo {
-      margin-top: 50px;
+      margin-top: 40px;
     }
 
     #logo img {
-      width: 140px;
+      width: 100px;
+      filter: drop-shadow(0 0 6px white);
       transition: transform 0.3s ease;
     }
 
@@ -68,78 +79,98 @@
 </head>
 <body>
   <h1>PIT - AI Workshop</h1>
-  <p id="subtitle">Press the button below to begin the PIT - AI Workshop countdown.</p>
-  <button id="startBtn">🚀 Begin Countdown</button>
+  <p id="subtitle">Press the button below to begin the countdown to the PIT - AI Workshop.</p>
+  <button id="startBtn" style="display: none;">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
 
+  <button id="resetBtn">Reset Countdown</button>
+
+  <!-- Mercedes-Benz Logo -->
   <div id="logo">
-    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo"/>
+    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
   </div>
 
-  <!-- Firebase Countdown Script -->
+  <!-- Firebase & Countdown Script -->
   <script type="module">
-    window.addEventListener("DOMContentLoaded", () => {
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js").then(({ initializeApp }) => {
-        import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js").then(({ getDatabase, ref, set, get, onValue }) => {
-          const firebaseConfig = {
-            apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
-            authDomain: "pit-ai-countdown.firebaseapp.com",
-            databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
-            projectId: "pit-ai-countdown",
-            storageBucket: "pit-ai-countdown.appspot.com",
-            messagingSenderId: "50176680454",
-            appId: "1:50176680454:web:29ee8480219de70cd89987"
-          };
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-          const app = initializeApp(firebaseConfig);
-          const db = getDatabase(app);
-          const startTimeRef = ref(db, "startTime");
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
+      authDomain: "pit-ai-countdown.firebaseapp.com",
+      databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
+      projectId: "pit-ai-countdown",
+      storageBucket: "pit-ai-countdown.appspot.com",
+      messagingSenderId: "50176680454",
+      appId: "1:50176680454:web:29ee8480219de70cd89987"
+    };
 
-          const targetDate = new Date("2025-08-08T13:05:00+05:30").getTime();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const startTimeRef = ref(db, "startTime");
 
-          const timerEl = document.getElementById("timer");
-          const btn = document.getElementById("startBtn");
+    const targetDate = new Date("2025-08-08T13:05:00+05:30").getTime();
+    const timerEl = document.getElementById("timer");
+    const btn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
-          function formatTime(ms) {
-            const totalSeconds = Math.floor(ms / 1000);
-            const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
-            const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
-            const secs = String(totalSeconds % 60).padStart(2, "0");
-            return `${hrs}:${mins}:${secs}`;
-          }
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const secs = String(totalSeconds % 60).padStart(2, "0");
+      return `${hrs}:${mins}:${secs}`;
+    }
 
-          function updateCountdown() {
-            const interval = setInterval(() => {
-              const now = Date.now();
-              const remaining = targetDate - now;
+    function updateCountdown(startTime) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = targetDate - now;
 
-              if (remaining <= 0) {
-                timerEl.textContent = "Timer Ended";
-                clearInterval(interval);
-              } else {
-                timerEl.textContent = formatTime(remaining);
-              }
-            }, 1000);
-          }
+        if (remaining <= 0) {
+          timerEl.textContent = "Timer Ended";
+          clearInterval(interval);
+        } else {
+          timerEl.textContent = formatTime(remaining);
+        }
+      }, 1000);
+    }
 
-          // Firebase listener
-          onValue(startTimeRef, (snapshot) => {
-            const value = snapshot.val();
-            if (value) {
-              btn.style.display = "none";
-              updateCountdown();
-            }
-          });
+    // Initial load: check Firebase
+    get(startTimeRef).then((snapshot) => {
+      const value = snapshot.val();
+      if (value) {
+        btn.style.display = "none";
+        updateCountdown(value);
+      } else {
+        btn.style.display = "inline-block";
+      }
+    });
 
-          // Button click
-          btn.addEventListener("click", async () => {
-            const snapshot = await get(startTimeRef);
-            if (!snapshot.exists()) {
-              await set(startTimeRef, Date.now());
-            }
-          });
-        });
-      });
+    // Realtime updates
+    onValue(startTimeRef, (snapshot) => {
+      const value = snapshot.val();
+      if (value) {
+        btn.style.display = "none";
+        updateCountdown(value);
+      }
+    });
+
+    // Start countdown
+    btn.addEventListener("click", async () => {
+      const snapshot = await get(startTimeRef);
+      if (!snapshot.exists()) {
+        await set(startTimeRef, Date.now());
+      }
+    });
+
+    // Reset countdown
+    resetBtn.addEventListener("click", async () => {
+      const confirmReset = confirm("Are you sure you want to reset the countdown?");
+      if (confirmReset) {
+        await remove(startTimeRef);
+        location.reload();
+      }
     });
   </script>
 </body>
