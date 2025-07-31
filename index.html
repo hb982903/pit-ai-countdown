@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PIT - AI Workshop Countdown</title>
   <style>
     body {
@@ -13,137 +13,149 @@
       background: black;
       color: white;
       position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://i.imgur.com/9WxGUWE.jpeg') no-repeat center center;
+      background-size: cover;
+      opacity: 0.6;
+      z-index: 0;
     }
 
     h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      font-size: 2.8em;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.5);
+    }
+
+    #subtitle {
+      font-size: 1.2em;
+      font-weight: 500;
+      color: #ffffffcc;
+      text-shadow: 0 0 10px rgba(255,255,255,0.6);
+      animation: pulse 3s infinite;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes pulse {
+      0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+      50% { text-shadow: 0 0 20px rgba(255,255,255,1); }
+      100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
     }
 
     #timer {
       font-size: 3em;
       margin-top: 20px;
+      text-shadow: 2px 2px 4px #000;
+      position: relative;
+      z-index: 1;
     }
 
     button {
       padding: 10px 20px;
-      font-size: 1em;
-      margin-top: 20px;
+      font-size: 1.2em;
       cursor: pointer;
+      background-color: #000000cc;
+      color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
     }
 
-    #resetBtn {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background-color: #333;
-      color: white;
-      font-size: 0.8em;
-      padding: 6px 12px;
+    button:hover {
+      background-color: #ffffff22;
     }
 
     #logo {
       margin-top: 40px;
-      width: 60px;
-      transition: transform 0.3s ease;
-      cursor: pointer;
+      z-index: 1;
+      position: relative;
     }
 
-    #logo:hover {
-      transform: scale(1.15);
+    #logo img {
+      width: 120px;
+      opacity: 0.92;
+      filter: drop-shadow(0 0 6px white);
+      transition: transform 0.3s ease;
+    }
+
+    #logo img:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
 <body>
   <h1>PIT - AI Workshop</h1>
-  <p>Press the button to start the official countdown</p>
+  <p id="subtitle">Press the button below to inaugurate the PIT - AI Workshop countdown.</p>
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
-  <div id="timer">--:--:--</div>
+  <div id="timer">170:00:00</div>
 
   <!-- Mercedes-Benz Logo -->
-  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" alt="Mercedes Logo" />
-
-  <!-- Reset Button -->
-  <button id="resetBtn" onclick="resetTimer()">Reset</button>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <div id="logo">
+    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
+  </div>
 
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
-      authDomain: "pit-ai-countdown.firebaseapp.com",
-      databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
-      projectId: "pit-ai-countdown",
-      storageBucket: "pit-ai-countdown.appspot.com",
-      messagingSenderId: "50176680454",
-      appId: "1:50176680454:web:29ee8480219de70cd89987"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const startRef = db.ref("countdown/startTime");
-
-    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
     let interval;
 
-    function formatTime(ms) {
-      const totalSeconds = Math.floor(ms / 1000);
-      const hrs = Math.floor(totalSeconds / 3600);
-      const mins = Math.floor((totalSeconds % 3600) / 60);
-      const secs = totalSeconds % 60;
-      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs.toString().padStart(2, '0')}:${mins
+        .toString()
+        .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function startCountdown() {
-      clearInterval(interval);
-      interval = setInterval(() => {
-        const now = Date.now();
-        const remaining = targetTime - now;
+    function updateDisplay() {
+      const endTime = localStorage.getItem('endTime');
+      if (!endTime) return;
 
-        if (remaining <= 0) {
-          document.getElementById("timer").textContent = "Timer Ended";
-          clearInterval(interval);
-        } else {
-          document.getElementById("timer").textContent = formatTime(remaining);
-        }
-      }, 1000);
-    }
+      const now = Date.now();
+      const remaining = Math.floor((endTime - now) / 1000);
 
-    startRef.on("value", snapshot => {
-      const started = snapshot.val();
-      if (started === true) {
-        document.getElementById("startBtn").style.display = "none";
-        startCountdown();
-      } else {
+      if (remaining <= 0) {
         clearInterval(interval);
-        document.getElementById("timer").textContent = "--:--:--";
-        document.getElementById("startBtn").style.display = "inline-block";
+        document.getElementById('timer').textContent = 'Timer Ended';
+        localStorage.removeItem('endTime');
+      } else {
+        document.getElementById('timer').textContent = formatTime(remaining);
       }
-    });
+    }
 
     function startTimer() {
-      const now = Date.now();
-      if (now < targetTime) {
-        startRef.set(true);
-      } else {
-        alert("⏰ Time has already passed!");
-      }
+      if (localStorage.getItem('endTime')) return;
+
+      const endTime = Date.now() + 170 * 3600 * 1000; // 170 hours in milliseconds
+      localStorage.setItem('endTime', endTime);
+      updateDisplay();
+
+      interval = setInterval(updateDisplay, 1000);
+
+      // Hide the button after starting
+      document.getElementById("startBtn").style.display = "none";
     }
 
-    function resetTimer() {
-      const confirmReset = confirm("⚠️ Are you sure you want to reset the countdown?");
-      if (confirmReset) {
-        startRef.set(false);
-      }
-    }
+    // Auto-resume if already started
+    if (localStorage.getItem('endTime')) {
+      interval = setInterval(updateDisplay, 1000);
+      updateDisplay();
 
-    window.startTimer = startTimer;
-    window.resetTimer = resetTimer;
+      // Hide the button if already running
+      document.getElementById("startBtn").style.display = "none";
+    }
   </script>
 </body>
 </html>
