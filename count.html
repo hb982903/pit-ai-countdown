@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIT - AI Workshop Countdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      background: black;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://i.imgur.com/9WxGUWE.jpeg') no-repeat center center;
+      background-size: cover;
+      opacity: 0.6;
+      z-index: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2.8em;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.5);
+    }
+
+    #subtitle {
+      font-size: 1.3em;
+      font-weight: 500;
+      color: #ffffffcc;
+      text-shadow: 0 0 10px rgba(255,255,255,0.6);
+      animation: pulse 3s infinite;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes pulse {
+      0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+      50% { text-shadow: 0 0 20px rgba(255,255,255,1); }
+      100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+    }
+
+    #timer {
+      font-size: 3em;
+      margin-top: 20px;
+      text-shadow: 2px 2px 4px #000;
+      position: relative;
+      z-index: 1;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+      background-color: #000000cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button:hover {
+      background-color: #ffffff22;
+    }
+
+    #logo {
+      margin-top: 40px;
+      z-index: 1;
+      position: relative;
+    }
+
+    #logo img {
+      width: 120px;
+      opacity: 0.92;
+      filter: drop-shadow(0 0 6px white);
+      transition: transform 0.3s ease;
+    }
+
+    #logo img:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>PIT - AI Workshop</h1>
+  <p id="subtitle">Press the button below to inaugurate the PIT - AI Workshop countdown.</p>
+  <button onclick="startTimer()">🚀 Begin Countdown</button>
+  <div id="timer">170:00:00</div>
+
+  <div id="logo">
+    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
+  </div>
+
+  <script>
+    let interval;
+
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return `${hrs.toString().padStart(2, '0')}:${mins
+        .toString()
+        .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      const endTime = localStorage.getItem('endTime');
+      if (!endTime) return;
+
+      const now = Date.now();
+      const remaining = Math.floor((endTime - now) / 1000);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        document.getElementById('timer').textContent = 'Timer Ended';
+        localStorage.removeItem('endTime');
+      } else {
+        document.getElementById('timer').textContent = formatTime(remaining);
+      }
+    }
+
+    function startTimer() {
+      if (localStorage.getItem('endTime')) return;
+
+      const endTime = Date.now() + 170 * 3600 * 1000;
+      localStorage.setItem('endTime', endTime);
+      updateDisplay();
+
+      interval = setInterval(updateDisplay, 1000);
+      document.querySelector("button").style.display = "none";
+    }
+
+    if (localStorage.getItem('endTime')) {
+      interval = setInterval(updateDisplay, 1000);
+      updateDisplay();
+      document.querySelector("button").style.display = "none";
+    }
+  </script>
+</body>
+</html>
