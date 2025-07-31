@@ -1,8 +1,86 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIT - AI Workshop Countdown</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      margin: 0;
+      background: black;
+      color: white;
+    }
 
-  document.addEventListener("DOMContentLoaded", () => {
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    }
+
+    #subtitle {
+      font-size: 1.2em;
+      font-weight: 500;
+      margin-bottom: 20px;
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+
+    #timer {
+      font-size: 3em;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      background-color: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
+
+    #logo {
+      margin-top: 50px;
+    }
+
+    #logo img {
+      width: 140px;
+      transition: transform 0.3s ease;
+    }
+
+    #logo img:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>PIT - AI Workshop</h1>
+  <p id="subtitle">Press the button below to begin the PIT - AI Workshop countdown.</p>
+  <button id="startBtn">🚀 Begin Countdown</button>
+  <div id="timer">--:--:--</div>
+
+  <div id="logo">
+    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo"/>
+  </div>
+
+  <!-- Firebase Countdown Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
@@ -44,7 +122,7 @@
       }, 1000);
     }
 
-    // Listen for any changes to startTime
+    // Listen for changes to startTime in Firebase
     onValue(startTimeRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
@@ -53,12 +131,13 @@
       }
     });
 
-    // Start button click
+    // Start button handler
     btn.addEventListener("click", async () => {
       const snapshot = await get(startTimeRef);
       if (!snapshot.exists()) {
         await set(startTimeRef, Date.now());
       }
     });
-  });
-</script>
+  </script>
+</body>
+</html>
