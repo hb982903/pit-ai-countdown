@@ -10,7 +10,7 @@
       text-align: center;
       padding: 50px;
       margin: 0;
-      background-color: black;
+      background: black;
       color: white;
       position: relative;
       overflow: hidden;
@@ -67,12 +67,12 @@
 
     #resetBtn {
       position: fixed;
-      bottom: 15px;
-      left: 15px;
-      font-size: 0.8em;
+      bottom: 20px;
+      left: 20px;
       padding: 6px 12px;
-      border-radius: 6px;
-      opacity: 0.85;
+      font-size: 0.9em;
+      opacity: 0.8;
+      z-index: 2;
     }
 
     #logo {
@@ -82,7 +82,7 @@
     }
 
     #logo img {
-      width: 150px;
+      width: 140px;
       opacity: 0.92;
       filter: drop-shadow(0 0 6px white);
       transition: transform 0.3s ease;
@@ -98,71 +98,79 @@
   <p id="subtitle">PIT - AI Workshop countdown</p>
   <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
-
-  <!-- Reset Button -->
-  <button id="resetBtn" onclick="resetTimer()">⏹ Reset</button>
+  <button id="resetBtn" onclick="resetTimer()">⟲ Reset</button>
 
   <!-- Mercedes-Benz Logo -->
   <div id="logo">
     <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
   </div>
 
-  <script>
+  <!-- Firebase and Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
+      authDomain: "pit-ai-countdown.firebaseapp.com",
+      databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
+      projectId: "pit-ai-countdown",
+      storageBucket: "pit-ai-countdown.appspot.com",
+      messagingSenderId: "50176680454",
+      appId: "1:50176680454:web:29ee8480219de70cd89987"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const startTimeRef = ref(db, 'countdown/startTime');
+
+    const endTime = new Date("2025-08-08T13:05:00+05:30").getTime();
     let interval;
 
-    // Target deadline: 8th August 2025, 1:05 PM IST
-    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
-
-    function formatTime(seconds) {
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      return `${hrs.toString().padStart(2, '0')}:${mins
-        .toString()
-        .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function updateDisplay() {
-      const started = localStorage.getItem('timerStarted');
-      if (!started) return;
-
-      const now = Date.now();
-      const remaining = Math.floor((targetTime - now) / 1000);
-
-      if (remaining <= 0) {
-        clearInterval(interval);
-        document.getElementById('timer').textContent = 'Timer Ended';
-        localStorage.removeItem('timerStarted');
-      } else {
+    function updateCountdown(startTimestamp) {
+      clearInterval(interval);
+      interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = endTime - now;
+        if (remaining <= 0) {
+          document.getElementById('timer').textContent = "Timer Ended";
+          clearInterval(interval);
+          return;
+        }
         document.getElementById('timer').textContent = formatTime(remaining);
-      }
+      }, 1000);
     }
 
-    function startTimer() {
-      if (localStorage.getItem('timerStarted')) return;
-
-      localStorage.setItem('timerStarted', true);
-      interval = setInterval(updateDisplay, 1000);
-      updateDisplay();
-      document.getElementById("startBtn").style.display = "none";
-    }
-
-    function resetTimer() {
-      const confirmReset = confirm("Are you sure you want to reset the timer?");
-      if (confirmReset) {
-        clearInterval(interval);
-        localStorage.removeItem('timerStarted');
-        document.getElementById('timer').textContent = '--:--:--';
+    // Live sync with Firebase
+    onValue(startTimeRef, (snapshot) => {
+      const startTimestamp = snapshot.val();
+      if (startTimestamp) {
+        document.getElementById("startBtn").style.display = "none";
+        updateCountdown(startTimestamp);
+      } else {
         document.getElementById("startBtn").style.display = "inline-block";
+        clearInterval(interval);
+        document.getElementById('timer').textContent = "--:--:--";
       }
-    }
+    });
 
-    // Resume if already started
-    if (localStorage.getItem('timerStarted')) {
-      interval = setInterval(updateDisplay, 1000);
-      updateDisplay();
-      document.getElementById("startBtn").style.display = "none";
-    }
+    window.startTimer = function () {
+      set(startTimeRef, Date.now());
+    };
+
+    window.resetTimer = function () {
+      if (confirm("Are you sure you want to reset the countdown?")) {
+        remove(startTimeRef);
+      }
+    };
   </script>
 </body>
 </html>
