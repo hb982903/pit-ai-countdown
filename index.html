@@ -35,16 +35,16 @@
 <body>
   <h1>PIT - AI Workshop</h1>
   <p>Press the button to start the official countdown</p>
-  <button onclick="startTimer()">🚀 Begin Countdown</button>
+  <button id="startBtn" onclick="startTimer()">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- Countdown Script -->
   <script>
-    var firebaseConfig = {
+    // Firebase config
+    const firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
       databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
@@ -54,19 +54,21 @@
       appId: "1:50176680454:web:29ee8480219de70cd89987"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const startRef = db.ref("countdown/startTime");
 
-    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
     let interval;
+    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
       const hrs = Math.floor(totalSeconds / 3600);
       const mins = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
-      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return `${hrs.toString().padStart(2, '0')}:${mins
+        .toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
     function startCountdown() {
@@ -84,20 +86,22 @@
       }, 1000);
     }
 
+    // Listen for Firebase trigger
     startRef.on("value", snapshot => {
       const started = snapshot.val();
-      if (started) {
-        document.querySelector("button").style.display = "none";
+      if (started === true) {
+        document.getElementById("startBtn").style.display = "none";
         startCountdown();
       }
     });
 
+    // Chairman triggers this
     function startTimer() {
       const now = Date.now();
       if (now < targetTime) {
         startRef.set(true);
       } else {
-        alert("Too late — countdown time has already passed.");
+        alert("Time has already passed!");
       }
     }
 
