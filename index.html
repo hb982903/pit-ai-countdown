@@ -3,105 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PIT - AI Workshop Countdown</title>
+  <title>PIT-AI Countdown</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: black;
+      background: #000;
       color: white;
+      height: 100vh;
       margin: 0;
-      padding: 50px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    h1 {
-      font-size: 2.8em;
-      margin-bottom: 10px;
-      text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.5);
-    }
-
-    #subtitle {
-      font-size: 1.2em;
-      font-weight: 500;
-      color: #ffffffcc;
-      text-shadow: 0 0 10px rgba(255,255,255,0.6);
-      animation: pulse 3s infinite;
-    }
-
-    @keyframes pulse {
-      0% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-      50% { text-shadow: 0 0 20px rgba(255,255,255,1); }
-      100% { text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     #timer {
-      font-size: 3em;
-      margin-top: 20px;
-      text-shadow: 2px 2px 4px #000;
+      font-size: 4em;
+      margin: 20px 0;
     }
 
     button {
       padding: 10px 20px;
-      font-size: 1.2em;
-      cursor: pointer;
-      background-color: #000000cc;
-      color: white;
+      font-size: 16px;
       border: none;
-      border-radius: 8px;
-      margin-top: 20px;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
-    button:hover {
-      background-color: #ffffff22;
-    }
-
-    #logo {
-      margin-top: 40px;
-    }
-
-    #logo img {
-      width: 140px;
-      opacity: 0.95;
-      filter: drop-shadow(0 0 6px white);
-      transition: transform 0.3s ease;
-    }
-
-    #logo img:hover {
-      transform: scale(1.1);
+    #startBtn {
+      background-color: #28a745;
+      color: white;
     }
 
     #resetBtn {
       position: fixed;
       bottom: 20px;
       left: 20px;
+      background-color: #dc3545;
+      color: white;
+      font-size: 12px;
       padding: 6px 12px;
-      font-size: 0.9em;
-      opacity: 0.8;
-      border-radius: 6px;
-      background-color: #ff4444cc;
     }
 
-    #resetBtn:hover {
-      opacity: 1;
-      background-color: #ff0000;
+    #logo {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      transition: transform 0.3s;
+    }
+
+    #logo:hover {
+      transform: scale(1.2);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.2em;
     }
   </style>
 </head>
 <body>
-  <h1>PIT - AI Workshop</h1>
-  <p id="subtitle">The countdown to the PIT - AI Workshop</p>
-  <button id="startBtn">🚀 Begin Countdown</button>
-  <div id="timer">Loading...</div>
+  <h2>The countdown to the PIT - AI Workshop</h2>
+  <div id="timer">Waiting to start...</div>
+  <button id="startBtn">Begin Countdown</button>
+  <button id="resetBtn">Reset</button>
+  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" alt="Mercedes Logo" />
 
-  <div id="logo">
-    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
-  </div>
-
-  <button id="resetBtn">Reset ⏱️</button>
-
-  <!-- Firebase & Countdown Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -120,11 +88,12 @@
     const db = getDatabase(app);
     const startTimeRef = ref(db, "startTime");
 
-    const targetDate = new Date("2025-08-08T11:05:00Z").getTime(); // Berlin time = UTC+2
-
     const timerEl = document.getElementById("timer");
     const btn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const targetDate = new Date("2025-08-08T11:05:00Z").getTime(); // 13:05 Berlin = 11:05 UTC
+
+    let interval = null;
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
@@ -135,10 +104,10 @@
     }
 
     function updateCountdown() {
-      const interval = setInterval(() => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
         const now = Date.now();
         const remaining = targetDate - now;
-
         if (remaining <= 0) {
           timerEl.textContent = "Timer Ended";
           clearInterval(interval);
@@ -148,7 +117,6 @@
       }, 1000);
     }
 
-    // Watch for updates
     onValue(startTimeRef, (snapshot) => {
       const val = snapshot.val();
       if (val) {
@@ -157,10 +125,10 @@
       } else {
         btn.style.display = "inline-block";
         timerEl.textContent = "Waiting to start...";
+        if (interval) clearInterval(interval);
       }
     });
 
-    // Start the countdown
     btn.addEventListener("click", async () => {
       const snap = await get(startTimeRef);
       if (!snap.exists()) {
@@ -168,13 +136,13 @@
       }
     });
 
-    // Reset logic
     resetBtn.addEventListener("click", async () => {
       const confirmReset = confirm("Are you sure you want to reset the countdown?");
       if (confirmReset) {
         await remove(startTimeRef);
         timerEl.textContent = "Waiting to start...";
         btn.style.display = "inline-block";
+        if (interval) clearInterval(interval);
       }
     });
   </script>
