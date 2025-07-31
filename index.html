@@ -79,7 +79,7 @@
 </head>
 <body>
   <h1>PIT - AI Workshop</h1>
-  <p id="subtitle">The countdown to the PIT - AI Workshop.</p>
+  <p id="subtitle">The countdown to the PIT - AI Workshop</p>
   <button id="startBtn" style="display: none;">🚀 Begin Countdown</button>
   <div id="timer">--:--:--</div>
 
@@ -137,7 +137,6 @@
       }, 1000);
     }
 
-    // Initial Load Check
     get(startTimeRef).then((snapshot) => {
       const value = snapshot.val();
       if (value) {
@@ -148,7 +147,6 @@
       }
     });
 
-    // Realtime Listener
     onValue(startTimeRef, (snapshot) => {
       const value = snapshot.val();
       if (value) {
@@ -157,7 +155,6 @@
       }
     });
 
-    // Start Button
     btn.addEventListener("click", async () => {
       const snapshot = await get(startTimeRef);
       if (!snapshot.exists()) {
@@ -165,12 +162,11 @@
       }
     });
 
-    // Reset Button
     resetBtn.addEventListener("click", async () => {
       const confirmReset = confirm("Are you sure you want to reset the countdown?");
       if (confirmReset) {
         await remove(startTimeRef);
-        location.reload(); // Reloads page so "Begin Countdown" shows again
+        location.reload();
       }
     });
   </script>
