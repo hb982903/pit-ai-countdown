@@ -1,63 +1,64 @@
-<!-- Add this just before </body> -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
- const firebaseConfig = {
-  apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
-  authDomain: "pit-ai-countdown.firebaseapp.com",
-  databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
-  projectId: "pit-ai-countdown",
-  storageBucket: "pit-ai-countdown.appspot.com",
-  messagingSenderId: "50176680454",
-  appId: "1:50176680454:web:29ee8480219de70cd89987"
-};
+  document.addEventListener("DOMContentLoaded", () => {
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
+      authDomain: "pit-ai-countdown.firebaseapp.com",
+      databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
+      projectId: "pit-ai-countdown",
+      storageBucket: "pit-ai-countdown.appspot.com",
+      messagingSenderId: "50176680454",
+      appId: "1:50176680454:web:29ee8480219de70cd89987"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const startTimeRef = ref(db, "startTime");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const startTimeRef = ref(db, "startTime");
 
-  const targetDate = new Date("2025-08-08T13:05:00+05:30").getTime();
+    const targetDate = new Date("2025-08-08T13:05:00+05:30").getTime();
 
-  const timerEl = document.getElementById("timer");
-  const btn = document.getElementById("startBtn");
+    const timerEl = document.getElementById("timer");
+    const btn = document.getElementById("startBtn");
 
-  function formatTime(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
-    const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
-    const secs = String(totalSeconds % 60).padStart(2, "0");
-    return `${hrs}:${mins}:${secs}`;
-  }
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+      const secs = String(totalSeconds % 60).padStart(2, "0");
+      return `${hrs}:${mins}:${secs}`;
+    }
 
-  function updateCountdown(startTime) {
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const remaining = targetDate - now;
+    function updateCountdown() {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = targetDate - now;
 
-      if (remaining <= 0) {
-        timerEl.textContent = "Timer Ended";
-        clearInterval(interval);
-      } else {
-        timerEl.textContent = formatTime(remaining);
+        if (remaining <= 0) {
+          timerEl.textContent = "Timer Ended";
+          clearInterval(interval);
+        } else {
+          timerEl.textContent = formatTime(remaining);
+        }
+      }, 1000);
+    }
+
+    // Listen for any changes to startTime
+    onValue(startTimeRef, (snapshot) => {
+      const value = snapshot.val();
+      if (value) {
+        btn.style.display = "none";
+        updateCountdown();
       }
-    }, 1000);
-  }
+    });
 
-  // Listen for any changes to startTime
-  onValue(startTimeRef, (snapshot) => {
-    const value = snapshot.val();
-    if (value) {
-      btn.style.display = "none";
-      updateCountdown(value);
-    }
-  });
-
-  // Start button click
-  btn.addEventListener("click", async () => {
-    const snapshot = await get(startTimeRef);
-    if (!snapshot.exists()) {
-      await set(startTimeRef, Date.now());
-    }
+    // Start button click
+    btn.addEventListener("click", async () => {
+      const snapshot = await get(startTimeRef);
+      if (!snapshot.exists()) {
+        await set(startTimeRef, Date.now());
+      }
+    });
   });
 </script>
