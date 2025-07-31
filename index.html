@@ -3,78 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PIT-AI Countdown</title>
+  <title>PIT - AI Workshop Countdown</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
+      padding: 50px;
+      margin: 0;
       background: black;
       color: white;
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      position: relative;
     }
 
-    h2 {
-      margin: 10px 0 20px;
-      font-size: 1.4rem;
+    h1 {
+      font-size: 2.5em;
+      text-shadow: 0 0 30px rgba(255,255,255,0.8);
+      z-index: 1;
+    }
+
+    #subtitle {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      color: #ffffffcc;
     }
 
     #timer {
-      font-size: 4em;
-      font-weight: bold;
-      margin: 10px 0 30px;
-      letter-spacing: 2px;
+      font-size: 3em;
+      margin-top: 20px;
+      text-shadow: 2px 2px 4px #000;
     }
 
     button {
-      padding: 12px 24px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 1.1em;
       cursor: pointer;
+      background-color: #000000cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
     }
 
-    #startBtn {
-      background-color: #28a745;
-      color: white;
+    button:hover {
+      background-color: #ffffff22;
     }
 
     #resetBtn {
       position: fixed;
       bottom: 20px;
       left: 20px;
-      background-color: #dc3545;
-      color: white;
-      font-size: 12px;
-      padding: 6px 12px;
+      font-size: 0.9em;
+      padding: 6px 14px;
     }
 
     #logo {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 65px;
-      transition: transform 0.3s ease-in-out;
+      margin-top: 40px;
     }
 
-    #logo:hover {
-      transform: scale(1.2);
+    #logo img {
+      width: 120px;
+      filter: drop-shadow(0 0 6px white);
+      transition: transform 0.3s ease;
+    }
+
+    #logo img:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
 <body>
-  <h2>The countdown to the PIT - AI Workshop</h2>
-  <div id="timer">Waiting to start...</div>
-  <button id="startBtn">Begin Countdown</button>
-  <button id="resetBtn">Reset</button>
-  <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/9/90/Mercedes-Logo.svg" alt="Mercedes Logo" />
+  <h1>PIT - AI Workshop</h1>
+  <p id="subtitle">The countdown to the PIT - AI Workshop</p>
+  <button id="startBtn">🚀 Begin Countdown</button>
+  <div id="timer">00:00:00</div>
+  <button id="resetBtn">🔁 Reset Timer</button>
 
+  <!-- Mercedes-Benz Logo -->
+  <div id="logo">
+    <img src="https://cdn.worldvectorlogo.com/logos/mercedes-benz-9.svg" alt="Mercedes-Benz Logo" />
+  </div>
+
+  <!-- Luxon CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const { DateTime } = luxon;
 
     const firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
@@ -88,16 +105,15 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const startTimeRef = ref(db, "startTime");
+    const startRef = ref(db, "startTime");
 
-    const timerEl = document.getElementById("timer");
-    const btn = document.getElementById("startBtn");
+    const targetBerlinTime = DateTime.fromISO("2025-08-08T13:05:00", { zone: "Europe/Berlin" }).toMillis();
+
+    const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const timerEl = document.getElementById("timer");
 
-    // Target time (8th Aug 2025, 1:05 PM IST = 07:35 UTC)
-    const targetDate = new Date("2025-08-08T07:35:00Z").getTime();
-
-    let interval = null;
+    let interval;
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
@@ -107,47 +123,49 @@
       return `${hrs}:${mins}:${secs}`;
     }
 
-    function updateCountdown() {
-      if (interval) clearInterval(interval);
+    function startCountdown(startTime) {
+      clearInterval(interval);
+
       interval = setInterval(() => {
-        const now = Date.now();
-        const remaining = targetDate - now;
+        const now = DateTime.now().setZone("Europe/Berlin").toMillis();
+        const remaining = targetBerlinTime - now;
+
         if (remaining <= 0) {
-          timerEl.textContent = "Timer Ended";
           clearInterval(interval);
+          timerEl.textContent = "Timer Ended";
         } else {
           timerEl.textContent = formatTime(remaining);
         }
       }, 1000);
     }
 
-    // Listen for timer start from DB
-    onValue(startTimeRef, (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        btn.style.display = "none";
-        updateCountdown();
-      } else {
-        btn.style.display = "inline-block";
-        timerEl.textContent = "Waiting to start...";
-        if (interval) clearInterval(interval);
+    // Start button click
+    startBtn.addEventListener("click", async () => {
+      const snapshot = await get(startRef);
+      if (!snapshot.exists()) {
+        await set(startRef, true);
       }
     });
 
-    btn.addEventListener("click", async () => {
-      const snap = await get(startTimeRef);
-      if (!snap.exists()) {
-        await set(startTimeRef, Date.now());
-      }
-    });
-
+    // Reset button click
     resetBtn.addEventListener("click", async () => {
-      const confirmReset = confirm("Are you sure you want to reset the countdown?");
-      if (confirmReset) {
-        if (interval) clearInterval(interval);
-        await remove(startTimeRef);
-        timerEl.textContent = "Waiting to start...";
-        btn.style.display = "inline-block";
+      if (confirm("Are you sure you want to reset the countdown?")) {
+        await remove(startRef);
+        clearInterval(interval);
+        timerEl.textContent = "00:00:00";
+        startBtn.style.display = "inline-block";
+      }
+    });
+
+    // Listen for changes
+    onValue(startRef, (snapshot) => {
+      if (snapshot.exists()) {
+        startBtn.style.display = "none";
+        startCountdown(snapshot.val());
+      } else {
+        startBtn.style.display = "inline-block";
+        clearInterval(interval);
+        timerEl.textContent = "00:00:00";
       }
     });
   </script>
