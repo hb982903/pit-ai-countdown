@@ -1,0 +1,58 @@
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
+    authDomain: "pit-ai-countdown.firebaseapp.com",
+    databaseURL: "https://pit-ai-countdown-default-rtdb.firebaseio.com",
+    projectId: "pit-ai-countdown",
+    storageBucket: "pit-ai-countdown.firebasestorage.app",
+    messagingSenderId: "50176680454",
+    appId: "1:50176680454:web:29ee8480219de70cd89987"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const startTimeRef = ref(db, 'countdown/startTime');
+
+  const endTime = new Date("2025-08-08T13:05:00+05:30").getTime();
+  let interval;
+
+  function formatTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function updateCountdown(startTimestamp) {
+    clearInterval(interval);
+    interval = setInterval(() => {
+      const now = Date.now();
+      const remaining = endTime - now;
+
+      if (remaining <= 0) {
+        document.getElementById('timer').textContent = "Timer Ended";
+        clearInterval(interval);
+        return;
+      }
+
+      document.getElementById('timer').textContent = formatTime(remaining);
+    }, 1000);
+  }
+
+  onValue(startTimeRef, (snapshot) => {
+    const startTimestamp = snapshot.val();
+    if (startTimestamp) {
+      document.querySelector("button").style.display = "none";
+      updateCountdown(startTimestamp);
+    }
+  });
+
+  window.startTimer = function () {
+    set(startTimeRef, Date.now());
+  };
+</script>
