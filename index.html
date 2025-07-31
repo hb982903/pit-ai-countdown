@@ -36,14 +36,15 @@
   <h1>PIT - AI Workshop</h1>
   <p>Press the button to start the official countdown</p>
   <button onclick="startTimer()">🚀 Begin Countdown</button>
-  <div id="timer">--:--</div>
+  <div id="timer">--:--:--</div>
 
-  <!-- ✅ Firebase SDK v8 (classic style) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- ✅ Your Firebase logic -->
+  <!-- Countdown Logic -->
   <script>
+    // Firebase Configuration
     var firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
@@ -54,26 +55,28 @@
       appId: "1:50176680454:web:29ee8480219de70cd89987"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     var db = firebase.database();
     var startTimeRef = db.ref("countdown/startTime");
 
-    const DURATION_MS = 5 * 60 * 1000; // 5 minutes
+    // Fixed target time: 8 Aug 2025, 1:05 PM IST
+    const endTime = new Date("2025-08-08T13:05:00+05:30").getTime();
     let interval = null;
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
-      const mins = Math.floor(totalSeconds / 60);
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function updateCountdown(startTimestamp) {
+    function updateCountdown() {
       clearInterval(interval);
       interval = setInterval(() => {
         const now = Date.now();
-        const elapsed = now - startTimestamp;
-        const remaining = DURATION_MS - elapsed;
+        const remaining = endTime - now;
 
         if (remaining <= 0) {
           document.getElementById('timer').textContent = "Timer Ended";
@@ -84,16 +87,18 @@
       }, 1000);
     }
 
+    // Listen for start trigger
     startTimeRef.on("value", function(snapshot) {
-      const startTimestamp = snapshot.val();
-      if (startTimestamp) {
+      const started = snapshot.val();
+      if (started) {
         document.querySelector("button").style.display = "none";
-        updateCountdown(startTimestamp);
+        updateCountdown();
       }
     });
 
+    // Button action
     function startTimer() {
-      startTimeRef.set(Date.now());
+      startTimeRef.set(true);
     }
 
     window.startTimer = startTimer;
