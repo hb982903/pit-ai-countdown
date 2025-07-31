@@ -110,8 +110,8 @@
   <script>
     let interval;
 
-    // Fixed end time: 8th Aug 2025, 13:05 IST (convert to UTC timestamp)
-    const fixedEndTime = new Date("2025-08-08T13:05:00+05:30").getTime();
+    // Target deadline: 8th August 2025, 1:05 PM IST
+    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
 
     function formatTime(seconds) {
       const hrs = Math.floor(seconds / 3600);
@@ -123,11 +123,11 @@
     }
 
     function updateDisplay() {
-      const startFlag = localStorage.getItem('timerStarted');
-      if (!startFlag) return;
+      const started = localStorage.getItem('timerStarted');
+      if (!started) return;
 
       const now = Date.now();
-      const remaining = Math.floor((fixedEndTime - now) / 1000);
+      const remaining = Math.floor((targetTime - now) / 1000);
 
       if (remaining <= 0) {
         clearInterval(interval);
@@ -142,8 +142,8 @@
       if (localStorage.getItem('timerStarted')) return;
 
       localStorage.setItem('timerStarted', true);
-      updateDisplay();
       interval = setInterval(updateDisplay, 1000);
+      updateDisplay();
       document.getElementById("startBtn").style.display = "none";
     }
 
@@ -157,10 +157,10 @@
       }
     }
 
-    // Auto-resume if previously started
+    // Resume if already started
     if (localStorage.getItem('timerStarted')) {
-      updateDisplay();
       interval = setInterval(updateDisplay, 1000);
+      updateDisplay();
       document.getElementById("startBtn").style.display = "none";
     }
   </script>
