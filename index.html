@@ -6,9 +6,9 @@
   <title>PIT-AI Countdown</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      background: #000;
+      background: black;
       color: white;
       height: 100vh;
       margin: 0;
@@ -17,16 +17,23 @@
       justify-content: center;
     }
 
+    h2 {
+      margin: 10px 0 20px;
+      font-size: 1.4rem;
+    }
+
     #timer {
       font-size: 4em;
-      margin: 20px 0;
+      font-weight: bold;
+      margin: 10px 0 30px;
+      letter-spacing: 2px;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 16px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
@@ -49,17 +56,12 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 50px;
-      transition: transform 0.3s;
+      width: 65px;
+      transition: transform 0.3s ease-in-out;
     }
 
     #logo:hover {
       transform: scale(1.2);
-    }
-
-    h2 {
-      margin: 0;
-      font-size: 1.2em;
     }
   </style>
 </head>
@@ -92,8 +94,8 @@
     const btn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
 
-    // Berlin Time: 13:05 UTC+2 → 11:05 UTC
-    const targetDate = new Date("2025-08-08T11:05:00Z").getTime();
+    // Target time (8th Aug 2025, 1:05 PM IST = 07:35 UTC)
+    const targetDate = new Date("2025-08-08T07:35:00Z").getTime();
 
     let interval = null;
 
@@ -119,6 +121,7 @@
       }, 1000);
     }
 
+    // Listen for timer start from DB
     onValue(startTimeRef, (snapshot) => {
       const val = snapshot.val();
       if (val) {
