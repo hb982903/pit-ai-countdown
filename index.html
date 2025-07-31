@@ -42,9 +42,8 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- Countdown Logic -->
+  <!-- Countdown Script -->
   <script>
-    // Firebase Configuration
     var firebaseConfig = {
       apiKey: "AIzaSyBUK9noIZ4PQOOfBnTJ8z_No8-o1Azgi_E",
       authDomain: "pit-ai-countdown.firebaseapp.com",
@@ -55,14 +54,12 @@
       appId: "1:50176680454:web:29ee8480219de70cd89987"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.database();
-    var startTimeRef = db.ref("countdown/startTime");
+    const db = firebase.database();
+    const startRef = db.ref("countdown/startTime");
 
-    // Fixed target time: 8 Aug 2025, 1:05 PM IST
-    const endTime = new Date("2025-08-08T13:05:00+05:30").getTime();
-    let interval = null;
+    const targetTime = new Date("2025-08-08T13:05:00+05:30").getTime();
+    let interval;
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
@@ -72,33 +69,36 @@
       return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function updateCountdown() {
+    function startCountdown() {
       clearInterval(interval);
       interval = setInterval(() => {
         const now = Date.now();
-        const remaining = endTime - now;
+        const remaining = targetTime - now;
 
         if (remaining <= 0) {
-          document.getElementById('timer').textContent = "Timer Ended";
+          document.getElementById("timer").textContent = "Timer Ended";
           clearInterval(interval);
         } else {
-          document.getElementById('timer').textContent = formatTime(remaining);
+          document.getElementById("timer").textContent = formatTime(remaining);
         }
       }, 1000);
     }
 
-    // Listen for start trigger
-    startTimeRef.on("value", function(snapshot) {
+    startRef.on("value", snapshot => {
       const started = snapshot.val();
       if (started) {
         document.querySelector("button").style.display = "none";
-        updateCountdown();
+        startCountdown();
       }
     });
 
-    // Button action
     function startTimer() {
-      startTimeRef.set(true);
+      const now = Date.now();
+      if (now < targetTime) {
+        startRef.set(true);
+      } else {
+        alert("Too late — countdown time has already passed.");
+      }
     }
 
     window.startTimer = startTimer;
