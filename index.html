@@ -78,9 +78,29 @@
     #logo img:hover {
       transform: scale(1.1);
     }
+
+    #mbitionLogo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    #mbitionLogo img {
+      width: 120px;
+      filter: drop-shadow(0 0 6px white);
+      transition: transform 0.3s ease;
+    }
+
+    #mbitionLogo img:hover {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
+  <div id="mbitionLogo">
+    <img src="mbition-linkpreview@2x.png" alt="MBITION Logo" />
+  </div>
+
   <div id="loadingScreen">⏳ Loading countdown status...</div>
 
   <div id="appContent">
@@ -168,7 +188,7 @@
       }
     });
 
-    // On Firebase value change
+    // Firebase Realtime Listener
     onValue(startRef, (snapshot) => {
       loadingScreen.style.display = "none";
       appContent.style.display = "block";
