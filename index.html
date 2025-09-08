@@ -30,14 +30,8 @@
       text-shadow: 0 0 30px rgba(255,255,255,0.8);
     }
 
-    #subtitle {
-      font-size: 1.2em;
-      margin-bottom: 20px;
-      color: #ffffffcc;
-    }
-
     #timer {
-      font-size: 3em;
+      font-size: 2.5em;
       margin-top: 20px;
       text-shadow: 2px 2px 4px #000;
     }
@@ -106,7 +100,7 @@
   <div id="appContent">
     <h1>PIT - AI Workshop</h1>
     <button id="startBtn">🚀 Begin Countdown</button>
-    <div id="timer">00:00:00</div>
+    <div id="timer">00d : 00h : 00m : 00s</div>
     <button id="resetBtn">🔁 Reset Timer</button>
 
     <div id="logo">
@@ -138,7 +132,8 @@
     const db = getDatabase(app);
     const startRef = ref(db, "startTime");
 
-    const targetBerlinTime = DateTime.fromISO("2025-08-08T13:05:00", { zone: "Europe/Berlin" }).toMillis();
+    // 🎯 Target Date: 12th Sept 2025, 16:35 IST
+    const targetTime = DateTime.fromISO("2025-09-12T16:35:00", { zone: "Asia/Kolkata" }).toMillis();
 
     const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -150,18 +145,19 @@
 
     function formatTime(ms) {
       const totalSeconds = Math.floor(ms / 1000);
-      const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      const days = Math.floor(totalSeconds / (3600 * 24));
+      const hrs = String(Math.floor((totalSeconds % (3600 * 24)) / 3600)).padStart(2, "0");
       const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
       const secs = String(totalSeconds % 60).padStart(2, "0");
-      return `${hrs}:${mins}:${secs}`;
+      return `${days}d : ${hrs}h : ${mins}m : ${secs}s`;
     }
 
     function startCountdown() {
       clearInterval(interval);
 
       interval = setInterval(() => {
-        const now = DateTime.now().setZone("Europe/Berlin").toMillis();
-        const remaining = targetBerlinTime - now;
+        const now = DateTime.now().setZone("Asia/Kolkata").toMillis();
+        const remaining = targetTime - now;
 
         if (remaining <= 0) {
           clearInterval(interval);
@@ -183,7 +179,7 @@
       if (confirm("Are you sure you want to reset the countdown?")) {
         await remove(startRef);
         clearInterval(interval);
-        timerEl.textContent = "00:00:00";
+        timerEl.textContent = "00d : 00h : 00m : 00s";
         startBtn.style.display = "inline-block";
       }
     });
@@ -199,7 +195,7 @@
       } else {
         startBtn.style.display = "inline-block";
         clearInterval(interval);
-        timerEl.textContent = "00:00:00";
+        timerEl.textContent = "00d : 00h : 00m : 00s";
       }
     });
   </script>
